@@ -20,7 +20,7 @@ class User:
         except (FileNotFoundError, json.JSONDecodeError):
             users = {}
         
-        users[username] = {"highscore": 0}
+        users[username] = {"highscore": 1}
         
         with open("users.json", "w") as file:
             json.dump(users, file, indent=4)
@@ -58,33 +58,44 @@ class MathQuiz:
         user_data = User.get_user(username) or User.create_user(username)
         highscore = user_data.get('highscore', 0)
         score = 0
-        
+
         while True:
             symbol = input("What type of math would you like to quiz yourself on (+, -, *, /)? ").strip()
             if symbol not in MathQuiz.TYPES:
                 print("Please enter a valid math symbol.")
                 continue
-            
+
             while True:
                 num1, num2, correct_answer = MathQuiz.create_equation(symbol)
-                
+
                 try:
                     user_answer = int(input(f"{num1} {symbol} {num2} = ? : "))
-                    
+
                     if user_answer == correct_answer:
                         score += 1
                         print(f"Correct! Current score: {score}")
                     else:
                         print(f"Wrong! Correct answer was {correct_answer}.")
                         break
-                
+
                 except ValueError:
                     print("Please enter a valid number.")
-            
-            highscore = max(highscore, score)
-            
-            User.create_user(username)
-            
+
+            if score > highscore:
+                highscore = score
+                user_data["highscore"] = highscore
+
+                try:
+                    with open("users.json", "r") as file:
+                        users = json.load(file)
+                except (FileNotFoundError, json.JSONDecodeError):
+                    users = {}
+
+                users[username] = user_data
+
+                with open("users.json", "w") as file:
+                    json.dump(users, file, indent=4)
+
             play_again = input("Do you want to play again? (yes/no): ").lower()
             if play_again != 'yes':
                 break
