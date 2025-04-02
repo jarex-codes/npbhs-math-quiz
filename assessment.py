@@ -20,7 +20,7 @@ class User:
         except (FileNotFoundError, json.JSONDecodeError):
             users = {}
         
-        users[username] = {"highscore": 1}
+        users[username] = {"highscore": 0}
         
         with open("users.json", "w") as file:
             json.dump(users, file, indent=4)
